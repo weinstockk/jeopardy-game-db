@@ -10,6 +10,7 @@ def start_game():
         game_id = str(uuid.uuid4())
 
         player_name = input("Player name: ")
+        player_name = player_name.strip().title()
         ai_difficulty = input("AI difficulty (easy/medium/hard): ")
 
         ai_1, ai_2 = pick_ai_names(player_name)
