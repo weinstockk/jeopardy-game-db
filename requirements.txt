@@ -1,7 +1,4 @@
 pymongo
 requests
-uuid
-json
-html
-datetime
-dotenv
+python-dotenv
+flask

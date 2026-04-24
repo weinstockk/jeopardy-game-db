@@ -1,6 +1,3 @@
-# Name: Keagan Weinstock
-# File: ia_name_utils.py
-
 import random
 import os
 
