@@ -1,3 +1,6 @@
+# Name: Keagan Weintock
+# File: models/bot.py
+
 import random
 
 class Bot:

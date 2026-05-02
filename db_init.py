@@ -1,3 +1,6 @@
+# Name: Keagan Weinstock
+# File: db_init.py
+
 import os
 import time
 import random
@@ -12,9 +15,7 @@ load_dotenv()
 client = MongoClient(os.getenv("MONGO_URI"))
 db = client[os.getenv("DB_NAME")]
 
-# -----------------------------
 # JEOPARDY CONFIG
-# -----------------------------
 VALUES = [200, 400, 600, 800, 1000]
 
 DIFFICULTY_MAP = {
@@ -25,9 +26,7 @@ DIFFICULTY_MAP = {
     1000: "hard"
 }
 
-# -----------------------------
 # API CALL WITH RETRY
-# -----------------------------
 def fetch_question(cat_id, difficulty, max_retries=8):
     """
     Reliable OpenTDB fetcher.
@@ -51,17 +50,28 @@ def fetch_question(cat_id, difficulty, max_retries=8):
 
     return None
 
+# ASSIGN DAILY DOUBLES
+def assign_daily_doubles(game_id):
+    board = list(db.board.find({"game_id": game_id}))
 
-# -----------------------------
+    if len(board) < 2:
+        raise Exception("Not enough board cells to assign Daily Doubles")
+
+    dd_cells = random.sample(board, 2)
+
+    for cell in dd_cells:
+        db.board.update_one(
+            {"_id": cell["_id"]},
+            {"$set": {"is_daily_double": True}}
+        )
+
+
 # INITIALIZE GAME
-# -----------------------------
 def initialize_game(game_id: str, config: dict):
 
     print(f"\nInitializing game: {game_id}\n")
 
-    # -------------------------
     # CLEAN ONLY THIS GAME
-    # -------------------------
     db.categories.delete_many({"game_id": game_id})
     db.questions.delete_many({"game_id": game_id})
     db.board.delete_many({"game_id": game_id})
@@ -69,9 +79,7 @@ def initialize_game(game_id: str, config: dict):
     db.bots.delete_many({"game_id": game_id})
     db.games.delete_many({"game_id": game_id})
 
-    # -------------------------
     # 1. GET 5 CATEGORIES
-    # -------------------------
     cat_data = requests.get(
         "https://opentdb.com/api_category.php"
     ).json()
@@ -94,9 +102,7 @@ def initialize_game(game_id: str, config: dict):
             "name": cat["name"]
         }
 
-    # -------------------------
     # 2. BUILD 5x5 BOARD (CORE FIX)
-    # -------------------------
     questions_docs = []
     board_docs = []
 
@@ -113,9 +119,7 @@ def initialize_game(game_id: str, config: dict):
                     f"{cat['name']} - {difficulty}"
                 )
 
-            # -------------------------
             # QUESTION DOCUMENT
-            # -------------------------
             question_doc = {
                 "game_id": game_id,
                 "category_id": category_map[cat["id"]]["db_id"],
@@ -133,9 +137,7 @@ def initialize_game(game_id: str, config: dict):
 
             q_id = db.questions.insert_one(question_doc).inserted_id
 
-            # -------------------------
             # BOARD DOCUMENT
-            # -------------------------
             board_docs.append({
                 "game_id": game_id,
                 "category_id": category_map[cat["id"]]["db_id"],
@@ -146,10 +148,9 @@ def initialize_game(game_id: str, config: dict):
             })
 
     db.board.insert_many(board_docs)
+    assign_daily_doubles(game_id)
 
-    # -------------------------
     # 3. PLAYER
-    # -------------------------
     player = db.players.insert_one({
         "game_id": game_id,
         "name": config["player_name"],
@@ -157,9 +158,7 @@ def initialize_game(game_id: str, config: dict):
         "created_at": datetime.utcnow()
     })
 
-    # -------------------------
     # 4. BOTS
-    # -------------------------
     db.bots.insert_many([
         {
             "game_id": game_id,
@@ -175,9 +174,7 @@ def initialize_game(game_id: str, config: dict):
         }
     ])
 
-    # -------------------------
     # 5. GAME STATE
-    # -------------------------
     db.games.insert_one({
         "game_id": game_id,
         "status": "active",
@@ -185,6 +182,27 @@ def initialize_game(game_id: str, config: dict):
         "round": 1,
         "created_at": datetime.utcnow(),
         "player_id": player.inserted_id
+    })
+
+    # 6. FINAL JEOPARDY
+    final_q = fetch_question(
+        random.choice(selected_categories)["id"],
+        "hard"
+    )
+
+    db.final_game.insert_one({
+        "game_id": game_id,
+
+        "question": html.unescape(final_q["question"]),
+        "correct_answer": html.unescape(final_q["correct_answer"]),
+        "incorrect_answers": [
+            html.unescape(x) for x in final_q["incorrect_answers"]
+        ],
+
+        "status": "not_started",
+        "wagers": {},
+        "answers": {},
+        "results": {}
     })
 
     print(f"Game {game_id} initialized successfully!")
