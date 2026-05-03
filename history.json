@@ -1,0 +1,27 @@
+[
+  {
+    "game_id": "7b57d6d6-9714-44a6-8a9b-6f59a4d79336",
+    "player": {
+      "name": "Test",
+      "score": -5200
+    },
+    "bots": [
+      {
+        "name": "Keagan",
+        "difficulty": "easy",
+        "score": -1000
+      },
+      {
+        "name": "Monte",
+        "difficulty": "easy",
+        "score": -1000
+      }
+    ],
+    "winner": {
+      "name": "Keagan",
+      "score": -1000
+    },
+    "total_questions": 25,
+    "completed_at": 1777746777.1644104
+  }
+]
