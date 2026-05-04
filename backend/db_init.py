@@ -150,6 +150,8 @@ def initialize_game(game_id: str, config: dict):
 
     db.board.insert_many(board_docs)
 
+    assign_daily_doubles(game_id)
+
     # 3. PLAYER
     player = db.players.insert_one({
         "game_id": game_id,

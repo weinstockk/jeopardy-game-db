@@ -339,7 +339,7 @@ class GameEngine:
             "completed_at": time.time()
         }
 
-        history_file = os.path.join(os.path.dirname(__file__), "history.json")
+        history_file = os.path.join(os.path.dirname(__file__), "data/history.json")
         history = []
         if os.path.exists(history_file):
             with open(history_file, "r") as f:

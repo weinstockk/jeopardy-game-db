@@ -73,5 +73,30 @@
     },
     "total_questions": 25,
     "completed_at": 1777864051.6631713
+  },
+  {
+    "game_id": "508b241e-09c5-427a-9920-ee95380b42c2",
+    "player": {
+      "name": "Keagan",
+      "score": -5000
+    },
+    "bots": [
+      {
+        "name": "Quinn",
+        "difficulty": "easy",
+        "score": -6600
+      },
+      {
+        "name": "Test",
+        "difficulty": "easy",
+        "score": -6800
+      }
+    ],
+    "winner": {
+      "name": "Keagan",
+      "score": -5000
+    },
+    "total_questions": 25,
+    "completed_at": 1777866512.9708478
   }
 ]

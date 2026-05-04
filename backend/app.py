@@ -110,7 +110,7 @@ def active_games():
 
 @app.get("/api/history")
 def get_history():
-    history_file = os.path.join(os.path.dirname(__file__), "history.json")
+    history_file = os.path.join(os.path.dirname(__file__), "data/history.json")
 
     if not os.path.exists(history_file):
         return []
