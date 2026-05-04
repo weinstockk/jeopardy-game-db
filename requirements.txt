@@ -1,5 +1,7 @@
 pymongo
 requests
+python-dotenv
+flask
 uuid
 json
 html

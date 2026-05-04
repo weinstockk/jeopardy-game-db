@@ -1,5 +1,5 @@
 # Name: Keagan Weinstock
-# File: ia_name_utils.py
+# File: ai_name_utils.py
 
 import random
 import os
