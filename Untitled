@@ -1,1 +1,0 @@
-Copy-Item "C:\Users\griffithjr\Downloads\jeopardy-vite\jeopardy-vite\src\main.js" "frontend\src\main.js" -Force
