@@ -13,17 +13,17 @@ class Bot:
         if difficulty == "easy":
             self.buzz_low = 1.2
             self.buzz_high = 2.0
-            self.accuracy = 3
+            self.accuracy = 2
 
         elif difficulty == "medium":
-            self.buzz_low = 0.7
-            self.buzz_high = 1.3
-            self.accuracy = 2
+            self.buzz_low = 0.4
+            self.buzz_high = 1.5
+            self.accuracy = 1
 
         else: # hard
             self.buzz_low = 0.2
-            self.buzz_high = 0.8
-            self.accuracy = 1
+            self.buzz_high = 2.0
+            self.accuracy = 0
 
     def buzz(self):
         return random.uniform(self.buzz_low, self.buzz_high)

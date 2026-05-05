@@ -1,10 +1,11 @@
-import {useState} from 'react'
+import {useState, useEffect} from 'react'
 import SetupScreen from '../screens/SetupScreen'
 import GameScreen from '../screens/GameScreen'
 import FinalScreen from '../screens/FinalScreen'
 import GameOverScreen from '../screens/GameOverScreen'
 import LoadingOverlay from '../components/LoadingOverlay'
 import './App.css'
+import {api} from "./api.ts";
 
 export type Screen = 'setup' | 'game' | 'final' | 'gameover'
 
@@ -34,11 +35,45 @@ export default function App() {
         loadingMsg: 'Loading...',
     })
 
+    useEffect(() => {
+    const savedId = localStorage.getItem('activeGameId')
+    const savedScreen = localStorage.getItem('activeScreen') as Screen | null
+    if (!savedId) return
+
+    setAppState(s => ({ ...s, loading: true, loadingMsg: 'Restoring game...' }))
+
+    api.getGame(savedId)
+        .then(gs => {
+            const shouldBeFinal = savedScreen === 'final' || gs.remaining === 0
+            setAppState({
+                screen: shouldBeFinal ? 'final' : 'game',
+                gameId: savedId,
+                gameState: gs,
+                loading: false,
+                loadingMsg: '',
+            })
+            if (shouldBeFinal) {
+                localStorage.setItem('activeScreen', 'final')
+            }
+        })
+        .catch(() => {
+            localStorage.removeItem('activeGameId')
+            localStorage.removeItem('activeScreen')
+            setAppState(s => ({ ...s, loading: false }))
+        })
+}, [])
+
     const setLoading = (loading: boolean, msg = 'Loading...') =>
         setAppState(s => ({...s, loading, loadingMsg: msg}))
 
-    const navigate = (screen: Screen, extra?: Partial<AppState>) =>
-        setAppState(s => ({...s, screen, ...extra}))
+    const navigate = (screen: Screen, extra?: Partial<AppState>) => {
+        setAppState(s => ({ ...s, screen, ...extra }))
+        if (screen === 'final' || screen === 'game') {
+            localStorage.setItem('activeScreen', screen)
+        } else {
+            localStorage.removeItem('activeScreen')
+        }
+}
 
     return (
         <div className="app">

@@ -49,6 +49,7 @@ export default function QuestionModal({gameId, q, playerName, onClose}: Props) {
     const [result, setResult] = useState<SubmitResult | null>(null)
     const [buzzerLose, setBuzzerLose] = useState('')
     const [secondChanceBots, setSecondChanceBots] = useState<SubmitResult | null>(null)
+    const [playerDidBuzz, setPlayerDidBuzz] = useState(false)
 
     const buzzTimeRef = useRef<number | null>(null)
     const startRef = useRef<number>(Date.now())
@@ -77,13 +78,16 @@ export default function QuestionModal({gameId, q, playerName, onClose}: Props) {
     function handleBuzz() {
         clearInterval(timerRef.current!)
         clearTimeout(timeoutRef.current!)
+
         const playerTime = (Date.now() - startRef.current) / 1000
+
+        setPlayerDidBuzz(true)
+        buzzTimeRef.current = playerTime
 
         const faster = Object.entries(q.bot_buzz_times).find(([, t]) => t < playerTime)
         if (faster) {
             handleBotWin(playerTime)
         } else {
-            buzzTimeRef.current = playerTime
             setBuzzed(true)
             setPhase('answer')
         }
@@ -217,6 +221,9 @@ export default function QuestionModal({gameId, q, playerName, onClose}: Props) {
                             <div className={`result-banner ${playerResult.correct ? 'correct' : 'wrong'}`}>
                                 {playerResult.correct ? `✓ Correct! +$${q.value}` : `✗ Wrong! −$${q.value}`}
                             </div>
+                        ) : playerDidBuzz ? (
+                            <div className="result-banner wrong">You buzzed at {buzzTimeRef.current?.toFixed(2)}s but
+                                were beaten</div>
                         ) : (
                             <div className="result-banner wrong">You didn't buzz in time!</div>
                         )}
@@ -232,14 +239,16 @@ export default function QuestionModal({gameId, q, playerName, onClose}: Props) {
 
                         <div className="results-list">
                             <h4>Buzz Times</h4>
-                            {result.all_buzz_times.map(p => (
-                                <div key={p.name} className="result-row">
-                                    <span
-                                        className="rr-name">{p.is_player ? playerName : p.name}{p.is_player ? ' (you)' : ''}</span>
-                                    <span
-                                        className="rr-ans">{p.buzz_time >= 999 ? '—' : `${p.buzz_time.toFixed(2)}s`}</span>
-                                </div>
-                            ))}
+                            {result.all_buzz_times
+                                .filter(p => p.buzz_time < 999)
+                                .map(p => (
+                                    <div key={p.name} className="result-row">
+                                        <span
+                                            className="rr-name">{p.is_player ? playerName : p.name}{p.is_player ? ' (you)' : ''}</span>
+                                        <span className="rr-ans">{p.buzz_time.toFixed(2)}s</span>
+                                    </div>
+                                ))
+                            }
                             {result.results.length > 0 && (
                                 <>
                                     <h4 style={{marginTop: '0.5rem'}}>Answers</h4>

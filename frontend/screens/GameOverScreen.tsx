@@ -18,6 +18,8 @@ export default function GameOverScreen({gameState, setAppState}: Props) {
     const isPlayerWinner = winner?.name === gameState.player.name
 
     function playAgain() {
+        localStorage.removeItem('activeGameId')
+        localStorage.removeItem('activeScreen')
         setAppState({
             screen: 'setup',
             gameId: null,

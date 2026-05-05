@@ -1,0 +1,302 @@
+[
+  {
+    "game_id": "798f6fac-050f-4686-9c21-88e207aa580b",
+    "player": {
+      "name": "Keagan",
+      "score": 24000
+    },
+    "bots": [
+      {
+        "name": "Quinn",
+        "difficulty": "hard",
+        "score": 1101
+      },
+      {
+        "name": "Gavin",
+        "difficulty": "hard",
+        "score": 6860
+      }
+    ],
+    "winner": {
+      "name": "Keagan",
+      "score": 24000
+    },
+    "total_questions": 25,
+    "completed_at": 1777909085.016312
+  },
+  {
+    "game_id": "d9c88c7c-93e5-4090-9c79-8752bfb487af",
+    "player": {
+      "name": "Keagan",
+      "score": -1600
+    },
+    "bots": [
+      {
+        "name": "Michael Link",
+        "difficulty": "easy",
+        "score": 3648
+      },
+      {
+        "name": "Alec Weinbender",
+        "difficulty": "easy",
+        "score": -3000
+      }
+    ],
+    "winner": {
+      "name": "Michael Link",
+      "score": 3648
+    },
+    "total_questions": 25,
+    "completed_at": 1777924879.998484
+  },
+  {
+    "game_id": "abc239c0-23f6-476c-9eed-8a3fb7df2642",
+    "player": {
+      "name": "Eli Vang",
+      "score": -2600
+    },
+    "bots": [
+      {
+        "name": "Louis Link",
+        "difficulty": "hard",
+        "score": 12810
+      },
+      {
+        "name": "John Eckberg",
+        "difficulty": "hard",
+        "score": 6363
+      }
+    ],
+    "winner": {
+      "name": "Louis Link",
+      "score": 12810
+    },
+    "total_questions": 25,
+    "completed_at": 1777925765.6566854
+  },
+  {
+    "game_id": "dc9d6668-c3e7-4b8c-a897-0fbff040d678",
+    "player": {
+      "name": "Eli Vang",
+      "score": -8800
+    },
+    "bots": [
+      {
+        "name": "Nicolas Picha",
+        "difficulty": "easy",
+        "score": -1200
+      },
+      {
+        "name": "Louis Link",
+        "difficulty": "easy",
+        "score": -2200
+      }
+    ],
+    "winner": {
+      "name": "Nicolas Picha",
+      "score": -1200
+    },
+    "total_questions": 25,
+    "completed_at": 1777993276.8939931
+  },
+  {
+    "game_id": "0d68ae93-6709-40ac-8c4f-78e87ba1654d",
+    "player": {
+      "name": "Gavin Childress",
+      "score": -9000
+    },
+    "bots": [
+      {
+        "name": "Keagan Weinstock",
+        "difficulty": "easy",
+        "score": -4800
+      },
+      {
+        "name": "John Eckberg",
+        "difficulty": "easy",
+        "score": -5800
+      }
+    ],
+    "winner": {
+      "name": "Keagan Weinstock",
+      "score": -4800
+    },
+    "total_questions": 25,
+    "completed_at": 1777993290.0306408
+  },
+  {
+    "game_id": "d00c1294-1a4b-4853-a1d9-433cd6729dc9",
+    "player": {
+      "name": "Jaden Griffith",
+      "score": 400
+    },
+    "bots": [
+      {
+        "name": "Autumn Mizer",
+        "difficulty": "hard",
+        "score": 8533
+      },
+      {
+        "name": "Alexander Pezewski",
+        "difficulty": "hard",
+        "score": 15786
+      }
+    ],
+    "winner": {
+      "name": "Alexander Pezewski",
+      "score": 15786
+    },
+    "total_questions": 25,
+    "completed_at": 1777993790.7802024
+  },
+  {
+    "game_id": "8262bec1-6316-4294-9fc6-28105751ebf2",
+    "player": {
+      "name": "Test1",
+      "score": -11400
+    },
+    "bots": [
+      {
+        "name": "Duaa Aljalous",
+        "difficulty": "easy",
+        "score": -4000
+      },
+      {
+        "name": "Louis Link",
+        "difficulty": "easy",
+        "score": -3600
+      }
+    ],
+    "winner": {
+      "name": "Louis Link",
+      "score": -3600
+    },
+    "total_questions": 25,
+    "completed_at": 1777993811.410121
+  },
+  {
+    "game_id": "485adad7-8e6e-4a52-a552-508ce0b5250f",
+    "player": {
+      "name": "Keagan Weinstock",
+      "score": -4400
+    },
+    "bots": [
+      {
+        "name": "Vincenzo Bean",
+        "difficulty": "easy",
+        "score": -4800
+      },
+      {
+        "name": "Duaa Aljalous",
+        "difficulty": "easy",
+        "score": -2200
+      }
+    ],
+    "winner": {
+      "name": "Duaa Aljalous",
+      "score": -2200
+    },
+    "total_questions": 25,
+    "completed_at": 1777995224.4165745
+  },
+  {
+    "game_id": "60d15702-d42d-4bb0-8b7d-bdbdeaca42f7",
+    "player": {
+      "name": "Nosql Presentation",
+      "score": -5400
+    },
+    "bots": [
+      {
+        "name": "Gavin Childress",
+        "difficulty": "easy",
+        "score": -2200
+      },
+      {
+        "name": "Colin Glynn",
+        "difficulty": "easy",
+        "score": -2000
+      }
+    ],
+    "winner": {
+      "name": "Colin Glynn",
+      "score": -2000
+    },
+    "total_questions": 25,
+    "completed_at": 1777995332.1645093
+  },
+  {
+    "game_id": "b64a822b-f5a3-4df3-8212-a15b27198f9b",
+    "player": {
+      "name": "Keagan Weinstock",
+      "score": -6200
+    },
+    "bots": [
+      {
+        "name": "Cocoro Wachi",
+        "difficulty": "easy",
+        "score": -400
+      },
+      {
+        "name": "Gavin Childress",
+        "difficulty": "easy",
+        "score": -400
+      }
+    ],
+    "winner": {
+      "name": "Cocoro Wachi",
+      "score": -400
+    },
+    "total_questions": 25,
+    "completed_at": 1778009838.6928172
+  },
+  {
+    "game_id": "a3c45141-e309-4b1c-b717-b8c43bd24df7",
+    "player": {
+      "name": "Keagan Weinstock",
+      "score": 0
+    },
+    "bots": [
+      {
+        "name": "Michael Link",
+        "difficulty": "hard",
+        "score": 10611
+      },
+      {
+        "name": "Leigh Goetsch",
+        "difficulty": "hard",
+        "score": 11903
+      }
+    ],
+    "winner": {
+      "name": "Leigh Goetsch",
+      "score": 11903
+    },
+    "total_questions": 25,
+    "completed_at": 1778009968.7587183
+  },
+  {
+    "game_id": "6443783c-e7b4-4257-a513-7874e8297114",
+    "player": {
+      "name": "Keagan Weinstock",
+      "score": 0
+    },
+    "bots": [
+      {
+        "name": "Nicolas Picha",
+        "difficulty": "easy",
+        "score": -2200
+      },
+      {
+        "name": "Colin Glynn",
+        "difficulty": "easy",
+        "score": -7000
+      }
+    ],
+    "winner": {
+      "name": "Keagan Weinstock",
+      "score": 0
+    },
+    "total_questions": 25,
+    "completed_at": 1778010349.2215629
+  }
+]

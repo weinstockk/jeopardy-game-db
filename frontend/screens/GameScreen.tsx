@@ -65,7 +65,20 @@ export default function GameScreen({gameId, gameState, setGameState, setLoading,
                         </div>
                     ))}
                 </div>
-                <div className="round-badge">Round {gameState.round} / 25</div>
+                <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+                    <div className="round-badge">Round {gameState.round} / 25</div>
+                    <button
+                        className="btn-ghost"
+                        style={{width: 'auto', padding: '0.3rem 0.8rem', fontSize: '0.85rem'}}
+                        onClick={() => {
+                            localStorage.removeItem('activeGameId')
+                            localStorage.removeItem('activeScreen')
+                            navigate('setup')
+                        }}
+                    >
+                        ✕ Quit
+                    </button>
+                </div>
             </div>
 
             {/* ── BOARD ── */}

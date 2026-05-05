@@ -38,8 +38,10 @@ export default function SetupScreen({setLoading, setAppState}: Props) {
         setLoading(true, 'Fetching questions...')
         try {
             const result = await api.newGame(name.trim(), diff)
+            localStorage.setItem('activeGameId', result.game_id)
             const gs = await api.getGame(result.game_id)
             setAppState(s => ({...s, gameId: result.game_id, gameState: gs, screen: 'game', loading: false}))
+            localStorage.setItem('activeScreen', 'game')
         } catch (e: unknown) {
             setLoading(false)
             setError(e instanceof Error ? e.message : 'Could not connect to server.')
@@ -76,6 +78,8 @@ export default function SetupScreen({setLoading, setAppState}: Props) {
         setLoading(true, 'Loading game...')
         try {
             const gs = await api.getGame(gameId)
+            localStorage.setItem('activeGameId', gameId)
+            localStorage.setItem('activeScreen', 'game')
             setAppState(s => ({...s, gameId, gameState: gs, screen: 'game', loading: false}))
         } catch {
             setLoading(false)

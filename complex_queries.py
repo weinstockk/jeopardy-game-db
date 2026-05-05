@@ -1,8 +1,9 @@
 # Name: Keagan Weinstock
 # File: complex_queries.py
 # Description: Six complex MongoDB queries for the Jeopardy NoSQL project.
-#              Each query demonstrates aggregation, multi-collection logic,
-#              or analytical insight that would require JOINs/GROUP BY in SQL.
+#              These queries demonstrate aggregation, joins ($lookup),
+#              and analytical insights using the ACTUAL project schema.
+#              NOTE: This version does NOT rely on a game_history collection.
 
 import os
 from pymongo import MongoClient
@@ -16,25 +17,27 @@ db = client[os.getenv("DB_NAME")]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# QUERY 1: Leaderboard — Top 5 Players Across All Game History
-# Equivalent SQL: SELECT name, SUM(score) AS total, COUNT(*) AS games_played
-#                 FROM history GROUP BY name ORDER BY total DESC LIMIT 5
+# QUERY 1: Player Leaderboard Across All Games
+# Equivalent SQL: SELECT name, SUM(score), COUNT(*)
+#                 FROM players GROUP BY name ORDER BY SUM(score) DESC LIMIT 5
 # ─────────────────────────────────────────────────────────────────────────────
-def query_1_leaderboard():
+def query_1_player_leaderboard():
     """
-    Aggregates the game_history collection to produce a leaderboard of the
-    top 5 human players by cumulative score across all completed games.
-    Mirrors a GROUP BY + ORDER BY + LIMIT pattern from relational SQL.
+    Aggregates the players collection to compute total score and number of
+    games played per player. Produces a top-5 leaderboard.
+
+    Demonstrates:
+    - $group (aggregation)
+    - computed averages
+    - sorting and limiting
     """
-    print("\n═══ QUERY 1: Top 5 Players (All-Time Leaderboard) ═══")
+    print("\n═══ QUERY 1: Player Leaderboard ═══")
+
     pipeline = [
-        {"$unwind": "$players"},
-        {"$match": {"players.type": "human"}},
         {"$group": {
-            "_id": "$players.name",
-            "total_score": {"$sum": "$players.final_score"},
-            "games_played": {"$sum": 1},
-            "wins": {"$sum": {"$cond": [{"$eq": ["$winner", "$players.name"]}, 1, 0]}}
+            "_id": "$name",
+            "total_score": {"$sum": "$score"},
+            "games_played": {"$sum": 1}
         }},
         {"$sort": {"total_score": -1}},
         {"$limit": 5},
@@ -43,115 +46,112 @@ def query_1_leaderboard():
             "player": "$_id",
             "total_score": 1,
             "games_played": 1,
-            "wins": 1,
-            "avg_score": {"$divide": ["$total_score", "$games_played"]}
+            "avg_score": {
+                "$round": [
+                    {"$divide": ["$total_score", "$games_played"]}, 1
+                ]
+            }
         }}
     ]
-    results = list(db.game_history.aggregate(pipeline))
+
+    results = list(db.players.aggregate(pipeline))
     pprint(results)
     return results
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# QUERY 2: Category Difficulty Analysis — Average Score Delta Per Difficulty
-# Equivalent SQL: SELECT difficulty, AVG(score_delta) FROM questions
-#                 JOIN board ON ... GROUP BY difficulty
+# QUERY 2: Question Difficulty Distribution
+# Equivalent SQL: SELECT difficulty, COUNT(*), AVG(value)
+#                 FROM questions GROUP BY difficulty
 # ─────────────────────────────────────────────────────────────────────────────
-def query_2_difficulty_analysis():
+def query_2_difficulty_distribution():
     """
-    Joins the questions collection with the board collection (via $lookup) to
-    compute the average value of correctly vs incorrectly answered questions
-    per difficulty tier. Reveals which difficulty levels are most valuable.
+    Analyzes how questions are distributed across difficulty levels and
+    calculates the average point value for each difficulty.
+
+    Demonstrates:
+    - grouping categorical data
+    - statistical aggregation (count + average)
     """
-    print("\n═══ QUERY 2: Score Delta by Difficulty Level ═══")
+    print("\n═══ QUERY 2: Question Difficulty Distribution ═══")
+
     pipeline = [
-        {"$lookup": {
-            "from": "board",
-            "localField": "_id",
-            "foreignField": "question_id",
-            "as": "board_info"
-        }},
-        {"$unwind": "$board_info"},
         {"$group": {
             "_id": "$difficulty",
-            "avg_value": {"$avg": "$value"},
-            "total_questions": {"$sum": 1},
-            "daily_doubles": {"$sum": {"$cond": ["$board_info.is_daily_double", 1, 0]}}
+            "count": {"$sum": 1},
+            "avg_value": {"$avg": "$value"}
         }},
-        {"$sort": {"avg_value": 1}},
+        {"$sort": {"count": -1}},
         {"$project": {
             "_id": 0,
             "difficulty": "$_id",
-            "avg_value": {"$round": ["$avg_value", 2]},
-            "total_questions": 1,
-            "daily_doubles": 1
+            "count": 1,
+            "avg_value": {"$round": ["$avg_value", 0]}
         }}
     ]
+
     results = list(db.questions.aggregate(pipeline))
     pprint(results)
     return results
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# QUERY 3: Bot Performance — Win Rate and Avg Score by AI Difficulty Setting
-# Equivalent SQL: SELECT difficulty, COUNT(*) AS games,
-#                 AVG(score) AS avg_score FROM bots GROUP BY difficulty
+# QUERY 3: Bot Performance by Difficulty
+# Equivalent SQL: SELECT difficulty, AVG(score), MAX(score), COUNT(*)
+#                 FROM bots GROUP BY difficulty
 # ─────────────────────────────────────────────────────────────────────────────
 def query_3_bot_performance():
     """
-    Aggregates the game_history collection, drilling into the bots sub-array
-    to compute per-difficulty win rates and average scores. Shows whether
-    hard bots actually win more than easy bots across all stored game records.
+    Evaluates how bots perform depending on their difficulty setting.
+    Calculates average and maximum scores across all games.
+
+    Demonstrates:
+    - aggregation over AI agents
+    - performance comparison across categories
     """
-    print("\n═══ QUERY 3: Bot Performance by Difficulty Setting ═══")
+    print("\n═══ QUERY 3: Bot Performance ═══")
+
     pipeline = [
-        {"$unwind": "$bots"},
         {"$group": {
-            "_id": "$bots.difficulty",
-            "total_games": {"$sum": 1},
-            "avg_score": {"$avg": "$bots.final_score"},
-            "total_wins": {"$sum": {
-                "$cond": [{"$eq": ["$winner", "$bots.name"]}, 1, 0]
-            }}
+            "_id": "$difficulty",
+            "avg_score": {"$avg": "$score"},
+            "max_score": {"$max": "$score"},
+            "games": {"$sum": 1}
         }},
-        {"$addFields": {
-            "win_rate_pct": {
-                "$round": [
-                    {"$multiply": [
-                        {"$divide": ["$total_wins", "$total_games"]},
-                        100
-                    ]},
-                    1
-                ]
-            }
-        }},
-        {"$sort": {"win_rate_pct": -1}},
+        {"$sort": {"avg_score": -1}},
         {"$project": {
             "_id": 0,
-            "bot_difficulty": "$_id",
-            "total_games": 1,
+            "difficulty": "$_id",
             "avg_score": {"$round": ["$avg_score", 0]},
-            "win_rate_pct": 1
+            "max_score": 1,
+            "games": 1
         }}
     ]
-    results = list(db.game_history.aggregate(pipeline))
+
+    results = list(db.bots.aggregate(pipeline))
     pprint(results)
     return results
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# QUERY 4: Category Popularity — Which Categories Appeared Most and Were Worth Most
-# Equivalent SQL: SELECT category_name, COUNT(*) AS appearances,
-#                 SUM(value) AS total_value FROM categories
-#                 JOIN questions ON ... GROUP BY category_name ORDER BY appearances DESC
+# QUERY 4: Category Value Contribution
+# Equivalent SQL: SELECT category_name, COUNT(*), SUM(value)
+#                 FROM categories JOIN questions
+#                 ON categories._id = questions.category_id
+#                 GROUP BY category_name ORDER BY SUM(value) DESC
 # ─────────────────────────────────────────────────────────────────────────────
-def query_4_category_popularity():
+def query_4_category_value():
     """
-    Looks up category documents joined with their questions to compute how
-    often each category name has appeared across games, and total board value
-    it contributed. Surfaces the most and least common trivia categories.
+    Joins categories with questions to determine which categories contribute
+    the most total point value across all games.
+
+    Demonstrates:
+    - $lookup (MongoDB JOIN)
+    - array aggregation
+    - derived metrics from joined collections
     """
-    print("\n═══ QUERY 4: Category Popularity & Total Board Value ═══")
+    print("\n═══ QUERY 4: Category Value Contribution ═══")
+
     pipeline = [
         {"$lookup": {
             "from": "questions",
@@ -161,97 +161,41 @@ def query_4_category_popularity():
         }},
         {"$project": {
             "name": 1,
-            "game_id": 1,
             "question_count": {"$size": "$questions"},
             "total_value": {"$sum": "$questions.value"}
         }},
-        {"$group": {
-            "_id": "$name",
-            "appearances": {"$sum": 1},
-            "total_board_value": {"$sum": "$total_value"},
-            "avg_board_value": {"$avg": "$total_value"}
-        }},
-        {"$sort": {"appearances": -1}},
-        {"$limit": 10},
-        {"$project": {
-            "_id": 0,
-            "category": "$_id",
-            "appearances": 1,
-            "total_board_value": 1,
-            "avg_board_value": {"$round": ["$avg_board_value", 0]}
-        }}
+        {"$sort": {"total_value": -1}},
+        {"$limit": 10}
     ]
+
     results = list(db.categories.aggregate(pipeline))
     pprint(results)
     return results
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# QUERY 5: Final Jeopardy Analysis — Correct Answer Rate and Avg Wager
-# Equivalent SQL: SELECT answered_correctly, COUNT(*) AS count,
-#                 AVG(wager) AS avg_wager FROM final_game GROUP BY answered_correctly
-# ─────────────────────────────────────────────────────────────────────────────
-def query_5_final_jeopardy_analysis():
-    """
-    Unpacks the nested wagers and results maps in the final_game collection
-    to compute correct-answer rate and average wager for both human players
-    and bots in Final Jeopardy. Demonstrates $objectToArray on dynamic keys.
-    """
-    print("\n═══ QUERY 5: Final Jeopardy Correct Rate & Average Wager ═══")
-    pipeline = [
-        {"$match": {"status": "completed"}},
-        {"$project": {
-            "results_array": {"$objectToArray": "$results"},
-            "wagers_array": {"$objectToArray": "$wagers"}
-        }},
-        {"$unwind": "$results_array"},
-        {"$unwind": "$wagers_array"},
-        {"$match": {"$expr": {"$eq": ["$results_array.k", "$wagers_array.k"]}}},
-        {"$group": {
-            "_id": "$results_array.v.correct",
-            "count": {"$sum": 1},
-            "avg_wager": {"$avg": "$wagers_array.v"},
-            "total_wager": {"$sum": "$wagers_array.v"}
-        }},
-        {"$project": {
-            "_id": 0,
-            "answered_correctly": "$_id",
-            "count": 1,
-            "avg_wager": {"$round": ["$avg_wager", 0]},
-            "total_wager": 1
-        }}
-    ]
-    results = list(db.final_game.aggregate(pipeline))
-    pprint(results)
-    return results
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# QUERY 6: Game Duration Proxy — Board Utilization Rate Per Game
+# QUERY 5: Board Utilization Rate per Game
 # Equivalent SQL: SELECT game_id,
-#                 SUM(CASE WHEN selected=1 THEN 1 ELSE 0 END) / COUNT(*) AS utilization
+#                 SUM(selected)/COUNT(*) * 100 AS utilization
 #                 FROM board GROUP BY game_id
 # ─────────────────────────────────────────────────────────────────────────────
-def query_6_board_utilization():
+def query_5_board_utilization():
     """
-    Computes the board utilization rate for each game — the proportion of
-    the 25 board cells that were actually answered before the game ended.
-    Games that ended early (e.g., load-and-abandon) will show < 100%.
-    Demonstrates conditional counting and ratio calculation in aggregation.
+    Measures how much of the game board was actually used in each game.
+    Useful for identifying incomplete or abandoned games.
+
+    Demonstrates:
+    - conditional aggregation ($cond)
+    - ratio calculation
     """
-    print("\n═══ QUERY 6: Board Utilization Rate Per Game ═══")
+    print("\n═══ QUERY 5: Board Utilization Rate ═══")
+
     pipeline = [
         {"$group": {
             "_id": "$game_id",
             "total_cells": {"$sum": 1},
-            "answered_cells": {"$sum": {"$cond": ["$selected", 1, 0]}},
-            "daily_doubles_hit": {
-                "$sum": {
-                    "$cond": [
-                        {"$and": ["$is_daily_double", "$selected"]},
-                        1, 0
-                    ]
-                }
+            "answered_cells": {
+                "$sum": {"$cond": ["$selected", 1, 0]}
             }
         }},
         {"$addFields": {
@@ -271,11 +215,52 @@ def query_6_board_utilization():
             "game_id": "$_id",
             "total_cells": 1,
             "answered_cells": 1,
-            "daily_doubles_hit": 1,
             "utilization_pct": 1
         }}
     ]
+
     results = list(db.board.aggregate(pipeline))
+    pprint(results)
+    return results
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# QUERY 6: Final Jeopardy Wager Analysis
+# Equivalent SQL: SELECT AVG(wager), MAX(wager), SUM(wager)
+#                 FROM final_game (after unnesting wagers map)
+# ─────────────────────────────────────────────────────────────────────────────
+def query_6_final_jeopardy_wagers():
+    """
+    Analyzes wagering behavior in Final Jeopardy by converting the dynamic
+    wagers object into an array and aggregating values.
+
+    Demonstrates:
+    - $objectToArray (handling dynamic keys)
+    - $unwind
+    - aggregation over nested data
+    """
+    print("\n═══ QUERY 6: Final Jeopardy Wager Analysis ═══")
+
+    pipeline = [
+        {"$project": {
+            "wagers_array": {"$objectToArray": "$wagers"}
+        }},
+        {"$unwind": "$wagers_array"},
+        {"$group": {
+            "_id": None,
+            "avg_wager": {"$avg": "$wagers_array.v"},
+            "max_wager": {"$max": "$wagers_array.v"},
+            "total_wager": {"$sum": "$wagers_array.v"}
+        }},
+        {"$project": {
+            "_id": 0,
+            "avg_wager": {"$round": ["$avg_wager", 0]},
+            "max_wager": 1,
+            "total_wager": 1
+        }}
+    ]
+
+    results = list(db.final_game.aggregate(pipeline))
     pprint(results)
     return results
 
@@ -284,11 +269,13 @@ def query_6_board_utilization():
 # RUN ALL QUERIES
 # ─────────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    print("Running all complex queries against Jeopardy database...\n")
-    query_1_leaderboard()
-    query_2_difficulty_analysis()
+    print("Running all complex queries...\n")
+
+    query_1_player_leaderboard()
+    query_2_difficulty_distribution()
     query_3_bot_performance()
-    query_4_category_popularity()
-    query_5_final_jeopardy_analysis()
-    query_6_board_utilization()
+    query_4_category_value()
+    query_5_board_utilization()
+    query_6_final_jeopardy_wagers()
+
     print("\nAll queries complete.")
